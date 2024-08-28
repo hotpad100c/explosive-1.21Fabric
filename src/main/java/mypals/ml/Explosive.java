@@ -55,7 +55,7 @@ public class Explosive implements ModInitializer {
 		public static boolean showRayCastInfo = false;
 		public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
 			dispatcher.register(
-					ClientCommandManager.literal("ShowExplotionBlockDamageInfo")
+					ClientCommandManager.literal("showExplosionBlockDamageInfo")
 							.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 									.executes(context -> {
 										boolean toggle = BoolArgumentType.getBool(context, "toggle");
@@ -67,7 +67,7 @@ public class Explosive implements ModInitializer {
 
 			);
 			dispatcher.register(
-					ClientCommandManager.literal("ShowExplotionEntityDamageInfo")
+					ClientCommandManager.literal("showExplosionEntityDamageInfo")
 							.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 									.executes(context -> {
 										boolean toggle = BoolArgumentType.getBool(context, "toggle");
