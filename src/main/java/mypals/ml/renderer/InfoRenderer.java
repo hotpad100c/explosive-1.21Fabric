@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static mypals.ml.Explosive.showRayCastInfo;
+import static mypals.ml.Explosive.*;
 
 
 public class InfoRenderer {
@@ -48,42 +48,45 @@ public class InfoRenderer {
             if (client.player != null) {
                 //client.player.sendMessage(Text.of("blocksToRender are" + blocksToRender), false);
             }
-            for (BlockPos p : blocksToDamage) {
-                // Render each affected block
+            if( showBlockDestroyInfo) {
+                for (BlockPos p : blocksToDamage) {
+                    // Render each affected block
 
-                drawString(matrixStack, p, counter, WILL_DESTROY, Formatting.YELLOW.getColorValue(), 0.045F);
-            }
-            for (EntityToDamage e : entitysToDamage) {
-                if (e.getEntity() instanceof LivingEntity livingEntity) {
-                    // 获取当前健康值并将其转换为半颗心表示
-                    float health = livingEntity.getHealth() / 2.0f;
-
-                    // 获取高度
-                    float height = livingEntity.getHeight();
-
-                    // 计算伤害，并确保它不会被舍入多次
-                    float damage = e.getDamage() / 2.0f;
-
-                    // 计算伤害后的剩余健康值，确保不会低于0
-                    float remainingHealth = Math.max(health - damage, 0);
-
-                    // 准备显示的文本
-                    String s = health + "♡" + " - ≈" + damage + "♡";
-                    String s2 = remainingHealth > 0 ? "≈ " + remainingHealth + "♡" : "DIE?";
-
-                    // 根据伤害占最大生命值的比例计算颜色
-                    float damageFactor = Math.min(damage / livingEntity.getMaxHealth(), 1.0f);
-                    int red = (int) (255 * damageFactor);
-                    int green = (int) (255 * (1 - damageFactor));
-                    int color = (red << 16) | (green << 8);
-
-                    // 绘制文本
-                    drawString(matrixStack, e.getEntity().getPos().add(0, height + 0.5, 0), counter, s, color, 0.025F);
-                    drawString(matrixStack, e.getEntity().getPos().add(0, height, 0), counter, s2, color, 0.025F);
+                    drawString(matrixStack, p, counter, WILL_DESTROY, Formatting.YELLOW.getColorValue(), 0.045F);
                 }
+            }
+            if(showDamageInfo) {
+                for (EntityToDamage e : entitysToDamage) {
+                    if (e.getEntity() instanceof LivingEntity livingEntity) {
+                        // 获取当前健康值并将其转换为半颗心表示
+                        float health = livingEntity.getHealth() / 2.0f;
+
+                        // 获取高度
+                        float height = livingEntity.getHeight();
+
+                        // 计算伤害，并确保它不会被舍入多次
+                        float damage = e.getDamage() / 2.0f;
+
+                        // 计算伤害后的剩余健康值，确保不会低于0
+                        float remainingHealth = Math.max(health - damage, 0);
+
+                        // 准备显示的文本
+                        String s = health + "♡" + " - ≈" + damage + "♡";
+                        String s2 = remainingHealth > 0 ? "≈ " + remainingHealth + "♡" : "DIE?";
+
+                        // 根据伤害占最大生命值的比例计算颜色
+                        float damageFactor = Math.min(damage / livingEntity.getMaxHealth(), 1.0f);
+                        int red = (int) (255 * damageFactor);
+                        int green = (int) (255 * (1 - damageFactor));
+                        int color = (red << 16) | (green << 8);
+
+                        // 绘制文本
+                        drawString(matrixStack, e.getEntity().getPos().add(0, height + 0.5, 0), counter, s, color, 0.025F);
+                        drawString(matrixStack, e.getEntity().getPos().add(0, height, 0), counter, s2, color, 0.025F);
+                    }
 
 
-
+                }
             }
             for (Vec3d v : explotionCenters) {
                 int orangeColor = 16753920; // 橘色

@@ -53,39 +53,69 @@ public class Explosive implements ModInitializer {
 
 		public static boolean showInfo = false;
 		public static boolean showRayCastInfo = false;
+		public static boolean showBlockDestroyInfo = false;
+		public static boolean showDamageInfo = false;
 		public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
 			dispatcher.register(
-					ClientCommandManager.literal("showExplosionBlockDamageInfo")
-							.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
-									.executes(context -> {
-										boolean toggle = BoolArgumentType.getBool(context, "toggle");
-										// 直接在这里编写逻辑
-										setOnOff(toggle);
-										return 1;
-									})
+					ClientCommandManager.literal("explosive")
+							.then(ClientCommandManager.literal("showExplosionInfo")
+								.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
+										.executes(context -> {
+											boolean toggle = BoolArgumentType.getBool(context, "toggle");
+											// 直接在这里编写逻辑
+											setOnOff(toggle);
+											return 1;
+										})
+								)
 							)
-
-			);
-			dispatcher.register(
-					ClientCommandManager.literal("showExplosionEntityDamageInfo")
-							.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
-									.executes(context -> {
-										boolean toggle = BoolArgumentType.getBool(context, "toggle");
-										// 直接在这里编写逻辑
-										setRayCastInfoOnOff(toggle);
-										return 1;
-									})
+							.then(ClientCommandManager.literal("showExplosionEntityDamageInfo")
+									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
+											.executes(context -> {
+												boolean toggle = BoolArgumentType.getBool(context, "toggle");
+												// 直接在这里编写逻辑
+												setDamageOnOff(toggle);
+												return 1;
+											})
+									))
+							.then(ClientCommandManager.literal("showExplosionRayCastInfo")
+									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
+											.executes(context -> {
+												boolean toggle = BoolArgumentType.getBool(context, "toggle");
+												// 直接在这里编写逻辑
+												setRayCastInfoOnOff(toggle);
+												return 1;
+											})
+									)
 							)
-
+							.then(ClientCommandManager.literal("showExplosionBlockDamageInfo")
+									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
+											.executes(context -> {
+												boolean toggle = BoolArgumentType.getBool(context, "toggle");
+												// 直接在这里编写逻辑
+												setBlockDestroyInfoOnOff(toggle);
+												return 1;
+											})
+									))
 			);
 		}
 		public static void setOnOff(boolean toggle)
 		{
+
 			showInfo = toggle;
+			if(toggle)
+				showBlockDestroyInfo = true;
 		}
 		public static void setRayCastInfoOnOff(boolean toggle)
 	{
 		showRayCastInfo = toggle;
+	}
+		public static void setBlockDestroyInfoOnOff(boolean toggle)
+	{
+		showBlockDestroyInfo = toggle;
+	}
+		public static void setDamageOnOff(boolean toggle)
+	{
+		showDamageInfo = toggle;
 	}
 		@Override
 		public void onInitialize() {
