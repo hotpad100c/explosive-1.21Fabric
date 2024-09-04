@@ -6,6 +6,7 @@ import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.Sa
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Formatting;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import static mypals.ml.Explosive.*;
+import static mypals.ml.renderer.LineRenderer.renderSingleLine;
 
 
 public class InfoRenderer {
@@ -36,7 +38,7 @@ public class InfoRenderer {
     public static Set<SamplePointData> samplePointData = new HashSet<>();
 
     @SuppressWarnings("ConstantConditions")
-    public static void render(MatrixStack matrixStack, RenderTickCounter counter) {
+    public static void render(MatrixStack matrixStack, RenderTickCounter counter, VertexConsumer buffer) {
         BlockPos pos = new BlockPos(5, 0, 0);
         //int goldValue = Formatting.GOLD.getColorValue();
         // Example for drawing a string at (0, 0, 0) with some formatting
@@ -108,6 +110,7 @@ public class InfoRenderer {
                             else {
                                 drawString(matrixStack, org, counter, "√", Formatting.GREEN.getColorValue(), 0.01F);
                                 drawString(matrixStack, collitionPoint, counter, "-", 16753920, 0.007F);
+                                drawLine(matrixStack, buffer, org, collitionPoint, Formatting.BLUE.getColorValue(), 255);
                             }
                         }
                     }
@@ -115,6 +118,13 @@ public class InfoRenderer {
 
             }
         }
+    }
+    public static void drawLine(MatrixStack stack, VertexConsumer buffer, Vec3d p1, Vec3d p2, int color, int a)
+    {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+        renderSingleLine(stack, buffer, (float) p1.x, (float) p1.y, (float) p1.z, (float) p2.x, (float) p2.y, (float) p2.z, r, g, b, a);
     }
 
     public static void setBlocksToDamage(Set<BlockPos> blocks) {blocksToDamage = blocks;}

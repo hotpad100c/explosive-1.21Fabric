@@ -24,10 +24,10 @@ public class WorldRendererMixin {
                         @Local RenderTickCounter tickCounter
     ) {
         if(showInfo) {
-            InfoRenderer.render(
+            /*InfoRenderer.render(
                     matrixStack,
                     tickCounter
-            );
+            );*/
         }
     }
 

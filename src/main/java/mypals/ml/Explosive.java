@@ -1,5 +1,8 @@
 package mypals.ml;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.option.KeyBinding;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -15,7 +18,9 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -33,6 +38,7 @@ import static mypals.ml.KeyBindingManage.KeyBindings.TOGGLE_RENDERER_E;
 import static mypals.ml.KeyBindingManage.KeyBindings.TOGGLE_RENDERER_F3;
 import static mypals.ml.explotionManage.ExplosionSimulateManager.simulateExplosiveBlocks;
 import static mypals.ml.explotionManage.ExplosionSimulateManager.simulateExplosiveEntitys;
+import static mypals.ml.renderer.InfoRenderer.render;
 
 public class Explosive implements ModInitializer {
 	public static final String MOD_ID = "explosive";
@@ -117,9 +123,39 @@ public class Explosive implements ModInitializer {
 	{
 		showDamageInfo = toggle;
 	}
-		@Override
-		public void onInitialize() {
-			ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+	@Override
+	public void onInitialize() {
+		WorldRenderEvents.BEFORE_DEBUG_RENDER.register((WorldRenderContext context) -> {
+			if(showInfo) {
+				RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+				RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+				RenderSystem.depthMask(false);
+				RenderSystem.enableBlend();
+				RenderSystem.defaultBlendFunc();
+				//if (smoothLines) GL11.glEnable(GL11.GL_LINE_SMOOTH);
+				//MatrixStack stack = context.matrixStack();
+				//stack.push();
+				//Tessellator tessellator = Tessellator.getInstance();
+
+
+
+				//Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+				//Vec3d cameraPos = camera.getPos();
+				//-----------------------
+				RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+				BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+				render(context.matrixStack(), context.tickCounter(), buffer);
+
+				//-------------------------
+				//BufferRenderer.drawWithGlobalProgram(buffer.end());
+				//stack.pop();
+				RenderSystem.applyModelViewMatrix();
+				RenderSystem.setShaderColor(1, 1, 1, 1);
+
+				RenderSystem.disableBlend();
+			}
+		});
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 				register(dispatcher);
 			});
 			ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
@@ -179,8 +215,8 @@ public class Explosive implements ModInitializer {
 						InfoRenderer.setSamplePointData(samplePointDatas);
 					}
 				} catch (Exception e) {
-					e.printStackTrace(); // Print the exception to the console for debugging
-				}
+				e.printStackTrace(); // Print the exception to the console for debugging
 			}
 		}
+	}
 }
