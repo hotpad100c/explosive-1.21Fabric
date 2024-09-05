@@ -21,6 +21,8 @@ import net.minecraft.world.explosion.Explosion;
 
 import java.util.*;
 
+import static mypals.ml.Explosive.*;
+
 public class ExplosionSimulator {
 
     private static boolean ignorSelf = false;
@@ -64,7 +66,7 @@ public class ExplosionSimulator {
         for (int x = 0; x < 16; ++x) {
             for (int y = 0; y < 16; ++y) {
                 for (int z = 0; z < 16; ++z) {
-                    if (isEdge(x, y, z)) {
+                    if (isEdge(x, y, z) && showExplotionBlockDamageRayInfo) {
                         processExplosion(ignorSelf, explosionCenter,entities, x, y, z, blastRadius, blocksToDestroy);
                     }
                 }
@@ -73,8 +75,11 @@ public class ExplosionSimulator {
 
         this.affected.blocksToDestriy.addAll(blocksToDestroy);
         for (Entity e : entities) {
-            float damage = calculateDamage(explosionCenter, power, e, sampleData);
-            this.affected.entityToDamage.add(new EntityToDamage(e, damage, sampleData));
+            if(showDamageInfo || showRayCastInfo) {
+                float damage = calculateDamage(explosionCenter, power, e, sampleData);
+                this.affected.entityToDamage.add(new EntityToDamage(e, damage, sampleData));
+            }
+
         }
         for(EntityToDamage e : this.affected.entityToDamage)
         {
@@ -120,7 +125,7 @@ public class ExplosionSimulator {
 
             castedPoints.add(new CastPoint(new Vec3d(currentX,currentY,currentZ), blastStrength));
 
-            if (!this.world.isInBuildLimit(currentPos)) {
+            if (!this.world.isInBuildLimit(currentPos) && showExplotionBlockDamageRayInfo) {
                 affected.blockDestructionRays.add(new ExplosionCastLine(rgb,castedPoints));
                 break;
             }

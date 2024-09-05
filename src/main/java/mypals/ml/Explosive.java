@@ -64,6 +64,7 @@ public class Explosive implements ModInitializer {
 		public static boolean showRayCastInfo = false;
 		public static boolean showBlockDestroyInfo = false;
 		public static boolean showDamageInfo = false;
+		public static boolean showExplotionBlockDamageRayInfo = false;
 		public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
 			dispatcher.register(
 					ClientCommandManager.literal("explosive")
@@ -105,6 +106,15 @@ public class Explosive implements ModInitializer {
 												return 1;
 											})
 									))
+							.then(ClientCommandManager.literal("showExplotionBlockDamageRayInfo")
+									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
+											.executes(context -> {
+												boolean toggle = BoolArgumentType.getBool(context, "toggle");
+												// 直接在这里编写逻辑
+												setExplotionBlockDamageRayInfoOnOff(toggle);
+												return 1;
+											})
+									))
 			);
 		}
 		public static void setOnOff(boolean toggle)
@@ -125,6 +135,10 @@ public class Explosive implements ModInitializer {
 		public static void setDamageOnOff(boolean toggle)
 	{
 		showDamageInfo = toggle;
+	}
+		public static void setExplotionBlockDamageRayInfoOnOff(boolean toggle)
+	{
+		showExplotionBlockDamageRayInfo = toggle;
 	}
 	@Override
 	public void onInitialize() {
