@@ -139,7 +139,6 @@ public class ExplosionSimulator {
                 if (isSourcePos && ignorScourcePos) {
                     blastStrength -=0;
                 }
-                // 如果是爆炸源位置并且我们忽略源位置，则直接返回
                 else{
                     blastStrength -= (blastResistance.get() + 0.3F) * 0.3F;
                 }

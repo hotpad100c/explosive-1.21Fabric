@@ -72,7 +72,6 @@ public class Explosive implements ModInitializer {
 								.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 										.executes(context -> {
 											boolean toggle = BoolArgumentType.getBool(context, "toggle");
-											// 直接在这里编写逻辑
 											setOnOff(toggle);
 											return 1;
 										})
@@ -82,7 +81,7 @@ public class Explosive implements ModInitializer {
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
-												// 直接在这里编写逻辑
+
 												setDamageOnOff(toggle);
 												return 1;
 											})
@@ -91,7 +90,6 @@ public class Explosive implements ModInitializer {
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
-												// 直接在这里编写逻辑
 												setRayCastInfoOnOff(toggle);
 												return 1;
 											})
@@ -101,7 +99,7 @@ public class Explosive implements ModInitializer {
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
-												// 直接在这里编写逻辑
+
 												setBlockDestroyInfoOnOff(toggle);
 												return 1;
 											})
@@ -110,7 +108,7 @@ public class Explosive implements ModInitializer {
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
-												// 直接在这里编写逻辑
+
 												setExplotionBlockDamageRayInfoOnOff(toggle);
 												return 1;
 											})
@@ -149,23 +147,9 @@ public class Explosive implements ModInitializer {
 				RenderSystem.depthMask(false);
 				RenderSystem.enableBlend();
 				RenderSystem.defaultBlendFunc();
-				//if (smoothLines) GL11.glEnable(GL11.GL_LINE_SMOOTH);
-				//MatrixStack stack = context.matrixStack();
-				//stack.push();
-				//Tessellator tessellator = Tessellator.getInstance();
-
-
-
-				//Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
-				//Vec3d cameraPos = camera.getPos();
-				//-----------------------
 				RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 				BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
 				render(context.matrixStack(), context.tickCounter(), buffer);
-
-				//-------------------------
-				//BufferRenderer.drawWithGlobalProgram(buffer.end());
-				//stack.pop();
 				RenderSystem.applyModelViewMatrix();
 				RenderSystem.setShaderColor(1, 1, 1, 1);
 
@@ -180,11 +164,9 @@ public class Explosive implements ModInitializer {
 			if(client != null && client.getWindow() != null) {
 				if (InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_F3)) {
 					if (InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_E)) {
-						// 执行自定义功能
 						setOnOff(!showInfo);
 						assert MinecraftClient.getInstance().player != null;
 						MinecraftClient.getInstance().player.sendMessage(Text.of("Explosive object render now set to " + showInfo), false);
-						// 阻止 F3 + E 被同时处理
 						KeyBinding.unpressAll();
 					}
 				}
@@ -203,11 +185,8 @@ public class Explosive implements ModInitializer {
 						BlockPos playerPos = client.player.getBlockPos();
 
 
-						// 查找当前区块内的所有爆炸点
 						List<ExplosionData> exBlockPos = ExplosiveObjectFinder.findExplosiveBlocksInRange(world, playerPos);
 						List<ExplosionData> exEntityPos = ExplosiveObjectFinder.findCrystlesInRange(world, playerPos);
-
-						// 对每个找到的爆炸物位置进行爆炸模拟和渲染
 						for (ExplosionData explotion : exBlockPos) {
 							Vec3d p_d = new Vec3d(explotion.getPosition().toVector3f());
 							Vec3i p_i = new Vec3i((int) p_d.x, (int) p_d.y, (int) p_d.z);
@@ -234,7 +213,7 @@ public class Explosive implements ModInitializer {
 						InfoRenderer.setSamplePointData(samplePointDatas);
 					}
 				} catch (Exception e) {
-				e.printStackTrace(); // Print the exception to the console for debugging
+				e.printStackTrace();
 			}
 		}
 	}
