@@ -1,8 +1,12 @@
 package mypals.ml.renderer;
 
+import mypals.ml.mathSupport.MathHelp.*;
+import mypals.ml.explotionManage.ExplosionSimulator;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.EntityToDamage;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.RayCastPointInfo.RayCastData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
+import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.ExplosionCastLine;
+import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.PointsOnLine.CastPoint;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderTickCounter;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import static mypals.ml.Explosive.*;
+import static mypals.ml.mathSupport.MathHelp.addAlphaWithDecay;
 import static mypals.ml.renderer.LineRenderer.renderSingleLine;
 
 
@@ -36,6 +41,8 @@ public class InfoRenderer {
     public static Set<Vec3d> explotionCenters = new HashSet<>();
     public static Set<EntityToDamage> entitysToDamage = new HashSet<>();
     public static Set<SamplePointData> samplePointData = new HashSet<>();
+
+    public static Set<ExplosionCastLine> explosionCastedLines = new HashSet<>();
 
     @SuppressWarnings("ConstantConditions")
     public static void render(MatrixStack matrixStack, RenderTickCounter counter, VertexConsumer buffer) {
@@ -90,6 +97,13 @@ public class InfoRenderer {
 
                 }
             }
+            for (ExplosionCastLine l : explosionCastedLines) {
+                int color = l.getLineColor();
+                for (CastPoint p : l.getPoints()) {
+                    int c = addAlphaWithDecay(color, p.getStrength());
+                    drawString(matrixStack, p.getPosition(), counter, "⧈", c, 0.005F);
+                }
+            }
             for (Vec3d v : explotionCenters) {
                 int orangeColor = 16753920; // 橘色
                 // Render each affected block
@@ -109,8 +123,8 @@ public class InfoRenderer {
                             }
                             else {
                                 drawString(matrixStack, org, counter, "√", Formatting.GREEN.getColorValue(), 0.01F);
-                                drawString(matrixStack, collitionPoint, counter, "-", 16753920, 0.007F);
-                                drawLine(matrixStack, buffer, org, collitionPoint, Formatting.BLUE.getColorValue(), 255);
+                                drawString(matrixStack, collitionPoint, counter, "⬦", Formatting.LIGHT_PURPLE.getColorValue(), 0.007F);
+                                //drawLine(matrixStack, buffer, org, collitionPoint, Formatting.BLUE.getColorValue(), 255);
                             }
                         }
                     }
@@ -137,6 +151,10 @@ public class InfoRenderer {
     public static void setSamplePointData(Set<SamplePointData> d)
     {
         samplePointData = d;
+    }
+    public static void setCastedLines(Set<ExplosionCastLine> l)
+    {
+        explosionCastedLines = l;
     }
 
     public static void drawString(MatrixStack matrixStack, BlockPos pos, RenderTickCounter countr, String text, int color, float size) {

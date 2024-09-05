@@ -4,6 +4,8 @@ import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.En
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.RayCastPointInfo.RayCastData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionAffectedObjects;
+import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.ExplosionCastLine;
+import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.PointsOnLine.CastPoint;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.fluid.FluidState;
@@ -15,6 +17,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
 
 import java.util.*;
 
@@ -24,7 +27,7 @@ public class ExplosionSimulator {
     private final World world;
     private final double x, y, z;
     private final float power;
-    private final ExplosionAffectedObjects affected = new ExplosionAffectedObjects(null,null, null, null);
+    private final ExplosionAffectedObjects affected = new ExplosionAffectedObjects(null,null,null, null, null);
 
     public ExplosionSimulator(boolean ignorSelf, World world, float x, float y, float z, float power) {
         this.world = world;
@@ -85,6 +88,16 @@ public class ExplosionSimulator {
     }
 
     private void processExplosion(boolean ignorScourcePos, Vec3d explotionScource, List<Entity> entities, int x, int y, int z, float blastRadius, Set<BlockPos> blocksToDestroy) {
+
+        List<CastPoint> castedPoints = new ArrayList<>();
+
+        int r = (x * 255) / 16;
+        int g = (y * 255) / 16;
+        int b = (z * 255) / 16;
+
+        // 将红色、绿色和蓝色值组合成 RGB int
+        int rgb = (r << 16) | (g << 8) | b;
+
         double dx = (double) ((float) x / 15.0F * 2.0F - 1.0F);
         double dy = (double) ((float) y / 15.0F * 2.0F - 1.0F);
         double dz = (double) ((float) z / 15.0F * 2.0F - 1.0F);
@@ -99,12 +112,16 @@ public class ExplosionSimulator {
         double currentZ = this.z;
 
         for (float blastStrength = initialBlastStrength; blastStrength > 0.0F; blastStrength -= 0.22500001F) {
+
             BlockPos currentPos = BlockPos.ofFloored(currentX, currentY, currentZ);
 
             BlockState blockState = this.world.getBlockState(currentPos);
             FluidState fluidState = this.world.getFluidState(currentPos);
 
+            castedPoints.add(new CastPoint(new Vec3d(currentX,currentY,currentZ), blastStrength));
+
             if (!this.world.isInBuildLimit(currentPos)) {
+                affected.blockDestructionRays.add(new ExplosionCastLine(rgb,castedPoints));
                 break;
             }
 
@@ -131,8 +148,8 @@ public class ExplosionSimulator {
             currentY += dy * 0.30000001192092896;
             currentZ += dz * 0.30000001192092896;
 
-
         }
+        affected.blockDestructionRays.add(new ExplosionCastLine(rgb,castedPoints));
     }
 
     public float calculateDamage(Vec3d pos, float power, Entity entity,SamplePointData sampleData) {

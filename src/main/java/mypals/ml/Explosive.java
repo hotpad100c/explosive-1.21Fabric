@@ -1,6 +1,7 @@
 package mypals.ml;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.ExplosionCastLine;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.option.KeyBinding;
@@ -56,6 +57,8 @@ public class Explosive implements ModInitializer {
 	    public static Set<EntityToDamage> entitysToDamage = new HashSet<>();
 
 		public static  Set<SamplePointData> samplePointDatas = new HashSet<>();
+
+		public static Set<ExplosionCastLine> explosionCastedLines = new HashSet<>();
 
 		public static boolean showInfo = false;
 		public static boolean showRayCastInfo = false;
@@ -176,7 +179,7 @@ public class Explosive implements ModInitializer {
 		private void onClientTick(MinecraftClient client) {
 			if (showInfo) {
 				try {
-
+					explosionCastedLines.clear();
 					blocksToDestroy.clear();
 					entitysToDamage.clear();
 					explotionCenters.clear();
@@ -195,7 +198,7 @@ public class Explosive implements ModInitializer {
 							Vec3d p_d = new Vec3d(explotion.getPosition().toVector3f());
 							Vec3i p_i = new Vec3i((int) p_d.x, (int) p_d.y, (int) p_d.z);
 							ExplosionAffectedObjects EAO = simulateExplosiveBlocks(world, new BlockPos(p_i), explotion.getStrength());
-
+							explosionCastedLines.addAll(EAO.getExplotionCastedLines());
 							blocksToDestroy.addAll(EAO.getBlocksToDestriy());
 							entitysToDamage.addAll(EAO.getEntitysToDamage());
 							explotionCenters.addAll(EAO.getExplotionCenters());
@@ -204,11 +207,13 @@ public class Explosive implements ModInitializer {
 						}
 						for (ExplosionData explotion : exEntityPos) {
 							ExplosionAffectedObjects EAO = simulateExplosiveEntitys(world, explotion.getPosition(), explotion.getStrength());
+							explosionCastedLines.addAll(EAO.getExplotionCastedLines());
 							blocksToDestroy.addAll(EAO.getBlocksToDestriy());
 							entitysToDamage.addAll(EAO.getEntitysToDamage());
 							explotionCenters.addAll(EAO.getExplotionCenters());
 							samplePointDatas.addAll(EAO.getSamplePointData());
 						}
+						InfoRenderer.setCastedLines(explosionCastedLines);
 						InfoRenderer.setBlocksToDamage(blocksToDestroy);
 						InfoRenderer.setEntitysToDamage(entitysToDamage);
 						InfoRenderer.setExplotionCenters(explotionCenters);
