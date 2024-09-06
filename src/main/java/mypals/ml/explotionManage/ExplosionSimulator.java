@@ -1,5 +1,6 @@
 package mypals.ml.explotionManage;
 
+import mypals.ml.Explosive;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.EntityToDamage;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.RayCastPointInfo.RayCastData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
@@ -66,7 +67,7 @@ public class ExplosionSimulator {
         for (int x = 0; x < 16; ++x) {
             for (int y = 0; y < 16; ++y) {
                 for (int z = 0; z < 16; ++z) {
-                    if (isEdge(x, y, z) && showExplotionBlockDamageRayInfo) {
+                    if (isEdge(x, y, z) && (showBlockDestroyInfo || showExplosionBlockDamageRayInfo)) {
                         processExplosion(ignorSelf, explosionCenter,entities, x, y, z, blastRadius, blocksToDestroy);
                     }
                 }
@@ -123,10 +124,10 @@ public class ExplosionSimulator {
             BlockState blockState = this.world.getBlockState(currentPos);
             FluidState fluidState = this.world.getFluidState(currentPos);
 
-            castedPoints.add(new CastPoint(new Vec3d(currentX,currentY,currentZ), blastStrength));
+            if(inRange(x,y,z) && showExplosionBlockDamageRayInfo)
+                castedPoints.add(new CastPoint(new Vec3d(currentX,currentY,currentZ), blastStrength));
 
-            if (!this.world.isInBuildLimit(currentPos) && showExplotionBlockDamageRayInfo) {
-                affected.blockDestructionRays.add(new ExplosionCastLine(rgb,castedPoints));
+            if (!this.world.isInBuildLimit(currentPos)) {
                 break;
             }
 
@@ -135,7 +136,6 @@ public class ExplosionSimulator {
 
             if (blastResistance.isPresent()) {
                 boolean isSourcePos = currentPos.equals(BlockPos.ofFloored(explotionScource));
-
                 if (isSourcePos && ignorScourcePos) {
                     blastStrength -=0;
                 }
@@ -226,5 +226,10 @@ public class ExplosionSimulator {
 
     public ExplosionAffectedObjects getAffected() {
         return affected;
+    }
+    public boolean inRange(int x, int y, int z)
+    {
+
+        return (Xmin <= x && Xmax >= x) && (Ymin <= y && Ymax >= y) && (Zmin <= z && Zmax >= z);
     }
 }

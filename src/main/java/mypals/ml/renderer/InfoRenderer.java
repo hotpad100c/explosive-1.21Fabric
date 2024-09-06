@@ -49,7 +49,7 @@ public class InfoRenderer {
         BlockPos pos = new BlockPos(5, 0, 0);
         //int goldValue = Formatting.GOLD.getColorValue();
         // Example for drawing a string at (0, 0, 0) with some formatting
-        drawString(matrixStack, pos, counter, SHOULD_BE_FINE, Formatting.GREEN.getColorValue(), 0.045F);
+        //drawString(matrixStack, pos, counter, SHOULD_BE_FINE, Formatting.GREEN.getColorValue(), 0.045F);
         //drawBox(matrixStack, Vec3d.of(pos), counter, 1, Formatting.YELLOW.getColorValue());
 
         if (blocksToDamage != null) {
@@ -84,7 +84,7 @@ public class InfoRenderer {
                         String s2 = remainingHealth > 0 ? "≈ " + remainingHealth + "♡" : "DIE?";
 
                         // 根据伤害占最大生命值的比例计算颜色
-                        float damageFactor = Math.min(damage / livingEntity.getMaxHealth(), 1.0f);
+                        float damageFactor = Math.max(health - damage, 0);
                         int red = (int) (255 * damageFactor);
                         int green = (int) (255 * (1 - damageFactor));
                         int color = (red << 16) | (green << 8);
@@ -101,7 +101,8 @@ public class InfoRenderer {
                 int color = l.getLineColor();
                 for (CastPoint p : l.getPoints()) {
                     int c = addAlphaWithDecay(color, p.getStrength());
-                    drawString(matrixStack, p.getPosition(), counter, "⧈", c, 0.005F);
+                    if(p.getStrength() > 0)
+                        drawString(matrixStack, p.getPosition(), counter, "⧈", c, 0.005F);
                 }
             }
             for (Vec3d v : explotionCenters) {

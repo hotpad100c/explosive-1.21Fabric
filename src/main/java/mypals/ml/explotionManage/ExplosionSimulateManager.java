@@ -24,5 +24,12 @@ public class ExplosionSimulateManager {
         simulator.simulate();
         return simulator.getAffected();
     }
+    public static ExplosionAffectedObjects simulateFakeExplosions(World world, Vec3d pos, float explosionPower, boolean ignor) {
+        Vec3d explosionPos = pos;
+
+        ExplosionSimulator simulator = new ExplosionSimulator(ignor, world, (float) explosionPos.getX(), (float) explosionPos.getY(), (float) explosionPos.getZ(), explosionPower);
+        simulator.simulate();
+        return simulator.getAffected();
+    }
 
 }
