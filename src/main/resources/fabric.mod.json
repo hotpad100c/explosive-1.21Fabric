@@ -1,31 +1,35 @@
 {
 	"schemaVersion": 1,
-	"id": "explosive",
+	"id": "explosion-visualizer",
 	"version": "${version}",
-	"name": "Explosive",
+	"name": "ExplosionVisualizer",
 	"description": "Explosion prediction based on minecraft code!",
 	"authors": [
 		"Ryan100c"
 	],
 	"contact": {
-		"homepage": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"homepage": "",
 		"sources": "https://github.com/hotpad100c/explosive-1.21Fabric"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/explosive/icon.png",
+	"icon": "assets/explosion-visualizer/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"main": [
-			"mypals.ml.Explosive"
+			"mypals.ml.ExplosionVisualizer"
 		],
 		"fabric-datagen": [
 			"mypals.ml.ExplosiveDataGenerator"
+		],
+		"modmenu": [
+			"mypals.ml.config.ModMenuIntegration"
 		]
 	},
 	"mixins": [
 		"explosive.mixins.json"
 	],
 	"depends": {
+		"yet_another_config_lib_v3": ">=3.5.0+1.21-fabric",
 		"fabricloader": ">=0.15.11",
 		"minecraft": "~1.21",
 		"java": ">=21",

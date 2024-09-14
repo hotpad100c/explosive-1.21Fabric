@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import mypals.ml.config.VisualizerConfig;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.ExplosionCastLines.ExplosionCastLine;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -12,7 +13,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import mypals.ml.KeyBindingManage.KeyBindings;
 import mypals.ml.explotionManage.*;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.EntityToDamage;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
@@ -26,13 +26,17 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.command.CommandSource;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.DisplayEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+
 import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -44,13 +48,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static mypals.ml.KeyBindingManage.KeyBindings.TOGGLE_RENDERER_E;
-import static mypals.ml.KeyBindingManage.KeyBindings.TOGGLE_RENDERER_F3;
 import static mypals.ml.explotionManage.ExplosionSimulateManager.*;
+import static mypals.ml.renderer.IRenderer.renderSelectionBox;
 import static mypals.ml.renderer.InfoRenderer.render;
 
-public class Explosive implements ModInitializer {
-	public static final String MOD_ID = "explosive";
+public class ExplosionVisualizer implements ModInitializer {
+	//public static final String MOD_ID = "explosive";
+	public static final String MOD_ID = "explosion-visualizer";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
@@ -79,18 +83,22 @@ public class Explosive implements ModInitializer {
 
 		public static int Xmin = 0, Ymin = 0, Zmin = 0;
 		public static int Xmax = 16, Ymax = 16, Zmax = 16;
+		public static int LayerMin = 0, LayerMax = 100;
 
 
+	public static Identifier id(String path) {
+		return Identifier.of(MOD_ID, path);
+	}
 		public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
 			ClientPlayerEntity player = MinecraftClient.getInstance().player;
 			dispatcher.register(
-					ClientCommandManager.literal("explosive")
+					ClientCommandManager.literal("explosionVisualizer")
 							.then(ClientCommandManager.literal("mainRender")
 								.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 										.executes(context -> {
 											boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-											Text coloredMessage = Text.literal("Explosive: Main render -> " + toggle).formatted(Formatting.GOLD);
+											Text coloredMessage = Text.literal("ExplosionVisualizer: Main render -> " + toggle).formatted(Formatting.GOLD);
 
                                             assert player != null;
                                             player.sendMessage(coloredMessage, false);
@@ -100,12 +108,12 @@ public class Explosive implements ModInitializer {
 										})
 								)
 							)
-							.then(ClientCommandManager.literal("renderEntityDamageInfo")
+							.then(ClientCommandManager.literal("renderEntityDamage")
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal("Explosive: Entity damage render -> " + toggle).formatted(Formatting.GREEN);
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Entity damage render -> " + toggle).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -114,12 +122,12 @@ public class Explosive implements ModInitializer {
 												return 1;
 											})
 									))
-							.then(ClientCommandManager.literal("renderEntityRayCastInfo")
+							.then(ClientCommandManager.literal("renderEntityRayCast")
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal("Explosive: Entity damage ray/sample-point render -> " + toggle).formatted(Formatting.GREEN);
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Entity damage ray/sample-point render -> " + toggle).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -129,12 +137,12 @@ public class Explosive implements ModInitializer {
 											})
 									)
 							)
-							.then(ClientCommandManager.literal("renderBlockDestructionInfo")
+							.then(ClientCommandManager.literal("renderBlockDestruction")
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal("Explosive: Block destruction render -> " + toggle).formatted(Formatting.GREEN);
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Block destruction render -> " + toggle).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -143,12 +151,12 @@ public class Explosive implements ModInitializer {
 												return 1;
 											})
 									))
-							.then(ClientCommandManager.literal("renderExplosionBlockDetectionRayInfo")
+							.then(ClientCommandManager.literal("renderBlockDetectionRay")
 									.then(ClientCommandManager.argument("toggle", BoolArgumentType.bool())
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal("Explosive: Block detection ray render -> " + toggle).formatted(Formatting.GREEN);
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render -> " + toggle).formatted(Formatting.GREEN);
 
 												assert player != null;
 												player.sendMessage(coloredMessage, false);
@@ -157,35 +165,93 @@ public class Explosive implements ModInitializer {
 												return 1;
 											})
 									))
-							.then(ClientCommandManager.literal("blockDamageRayRendererRangeSettings")
-									.then(ClientCommandManager.argument("Xmin", IntegerArgumentType.integer(-1, 16))
-											.then(ClientCommandManager.argument("Xmax", IntegerArgumentType.integer(-1, 16))
-													.then(ClientCommandManager.argument("Ymin", IntegerArgumentType.integer(-1, 16))
-															.then(ClientCommandManager.argument("Ymax", IntegerArgumentType.integer(-1, 16))
-																	.then(ClientCommandManager.argument("Zmin", IntegerArgumentType.integer(-1, 16))
-																			.then(ClientCommandManager.argument("Zmax", IntegerArgumentType.integer(-1, 16))
-																					.executes(context -> {
-																						int Xmin = IntegerArgumentType.getInteger(context, "Xmin");
-																						int Xmax = IntegerArgumentType.getInteger(context, "Xmax");
-																						int Ymin = IntegerArgumentType.getInteger(context, "Ymin");
-																						int Ymax = IntegerArgumentType.getInteger(context, "Ymax");
-																						int Zmin = IntegerArgumentType.getInteger(context, "Zmin");
-																						int Zmax = IntegerArgumentType.getInteger(context, "Zmax");
-																						setDestructionRayRendererRange(Xmin, Xmax, Ymin,Ymax,Zmin,Zmax);
+							.then(ClientCommandManager.literal("blockDamageRayRendererSettings")
+									.then(ClientCommandManager.literal("range")
+										.then(ClientCommandManager.argument("Xmin", IntegerArgumentType.integer(-1, 16))
+												.then(ClientCommandManager.argument("Xmax", IntegerArgumentType.integer(-1, 16))
+														.then(ClientCommandManager.argument("Ymin", IntegerArgumentType.integer(-1, 16))
+																.then(ClientCommandManager.argument("Ymax", IntegerArgumentType.integer(-1, 16))
+																		.then(ClientCommandManager.argument("Zmin", IntegerArgumentType.integer(-1, 16))
+																				.then(ClientCommandManager.argument("Zmax", IntegerArgumentType.integer(-1, 16))
+																						.executes(context -> {
+																							int Xmin = IntegerArgumentType.getInteger(context, "Xmin");
+																							int Xmax = IntegerArgumentType.getInteger(context, "Xmax");
+																							int Ymin = IntegerArgumentType.getInteger(context, "Ymin");
+																							int Ymax = IntegerArgumentType.getInteger(context, "Ymax");
+																							int Zmin = IntegerArgumentType.getInteger(context, "Zmin");
+																							int Zmax = IntegerArgumentType.getInteger(context, "Zmax");
+																							SetDestructionRayRenderRange(Xmin, Xmax, Ymin,Ymax,Zmin,Zmax);
 
-																						Text coloredMessage = Text.literal("Explosive: Block detection ray render range updated.").formatted(Formatting.GREEN);
+																							Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render range updated.").formatted(Formatting.GREEN);
 
-																						assert player != null;
-																						player.sendMessage(coloredMessage, false);
+																							assert player != null;
+																							player.sendMessage(coloredMessage, false);
 
-																						return 1;
-																					})
-																			)
-																	)
-															)
+																							return 1;
+																						})
+																				)
+																		)
+																)
+														)
+												)
+										)
+									)
+									.then(ClientCommandManager.literal("layer")
+											.then(ClientCommandManager.argument("LayerMin", IntegerArgumentType.integer(0, 114514))
+													.then(ClientCommandManager.argument("LayerMax", IntegerArgumentType.integer(0, 114514))
+															.executes(context -> {
+																int LayerMin = IntegerArgumentType.getInteger(context, "LayerMin");
+																int LayerMax = IntegerArgumentType.getInteger(context, "LayerMax");
+																SetDestructionRayRenderLayer(LayerMin,LayerMax);
+
+																Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render layer updated.").formatted(Formatting.GREEN);
+
+																assert player != null;
+																player.sendMessage(coloredMessage, false);
+
+																return 1;
+															})
 													)
 											)
 									)
+									.then(ClientCommandManager.literal("resetAll")
+										.executes(context -> {
+											SetDestructionRayRenderLayer(0,100);
+											SetDestructionRayRenderRange(0,16,0,16,0,16);
+
+											Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render settings rested!").formatted(Formatting.RED);
+
+											assert player != null;
+											player.sendMessage(coloredMessage, false);
+
+											return 1;
+										})
+									)
+									.then(ClientCommandManager.literal("resetLayer")
+											.executes(context -> {
+												SetDestructionRayRenderLayer(0,100);
+
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render layer rested!").formatted(Formatting.YELLOW);
+
+												assert player != null;
+												player.sendMessage(coloredMessage, false);
+
+												return 1;
+											})
+									)
+									.then(ClientCommandManager.literal("resetRange")
+											.executes(context -> {
+												SetDestructionRayRenderRange(0,16,0,16,0,16);
+
+												Text coloredMessage = Text.literal("ExplosionVisualizer: Block detection ray render range rested!").formatted(Formatting.YELLOW);
+
+												assert player != null;
+												player.sendMessage(coloredMessage, false);
+
+												return 1;
+											})
+									)
+
 							)
 							.then(ClientCommandManager.literal("fakeExplosion")
 									.then(ClientCommandManager.literal("add")
@@ -208,7 +274,7 @@ public class Explosive implements ModInitializer {
 																						{
 																							if(Objects.equals(FE.name, name)) {
 
-																								Text coloredMessage = Text.literal("Explosive: Failed to add fake explosion " + name + "at " + new Vec3d(x, y, z) + " : duplicate naming!").formatted(Formatting.RED);
+																								Text coloredMessage = Text.literal("ExplosionVisualizer: Failed to add fake explosion " + name + "at " + new Vec3d(x, y, z) + " : duplicate naming!").formatted(Formatting.RED);
 
 																								assert player != null;
 																								player.sendMessage(coloredMessage, false);
@@ -216,7 +282,7 @@ public class Explosive implements ModInitializer {
 																							}
 																						}
 																						fakeExplosions.add(new FakeExplosion(x, y, z, p, ignoreBlockInside, name));
-																						Text coloredMessage = Text.literal("Explosive: Fake explosion :" + name + " was added at " + new Vec3d(x, y, z) + " with power of" + p).formatted(Formatting.GREEN);
+																						Text coloredMessage = Text.literal("ExplosionVisualizer: Fake explosion :" + name + " was added at " + new Vec3d(x, y, z) + " with power of" + p).formatted(Formatting.GREEN);
 																						assert player != null;
 																						player.sendMessage(coloredMessage, false);
 																						return 1;
@@ -234,7 +300,7 @@ public class Explosive implements ModInitializer {
 													.executes(context -> {
 														String n = StringArgumentType.getString(context, "name");
                                                         fakeExplosions.removeIf(fe -> Objects.equals(fe.name, n));
-														Text coloredMessage = Text.literal("Explosive: Removed fake explosion : " + n).formatted(Formatting.DARK_GREEN);
+														Text coloredMessage = Text.literal("ExplosionVisualizer: Removed fake explosion : " + n).formatted(Formatting.YELLOW);
 
 														assert player != null;
 														player.sendMessage(coloredMessage, false);
@@ -244,7 +310,7 @@ public class Explosive implements ModInitializer {
 											.then(ClientCommandManager.literal("all")
 													.executes(context -> {
 														fakeExplosions.clear();
-														Text coloredMessage = Text.literal("Explosive: Cleared all fake explosions").formatted(Formatting.DARK_GREEN);
+														Text coloredMessage = Text.literal("ExplosionVisualizer: Cleared all fake explosions").formatted(Formatting.RED);
 
 														assert player != null;
 														player.sendMessage(coloredMessage, false);
@@ -257,55 +323,133 @@ public class Explosive implements ModInitializer {
 		}
 	private static SuggestionProvider<FabricClientCommandSource> suggestFromSet(Set<FakeExplosion> explosions) {
 		return (context, builder) -> {
-			// 提取每个FakeExplosion的name变量，并提供为建议
+
 			Set<String> names = explosions.stream()
 					.map(fakeExplosion -> fakeExplosion.name)
 					.collect(Collectors.toSet());
 			return CommandSource.suggestMatching(names, builder);
 		};
 	}
-		public static void setDestructionRayRendererRange(int XMin, int XMax,int YMin, int YMax,int ZMin, int ZMax)
-		{
-			Xmin = XMin;
-			Xmax = XMax;
-			Ymin = YMin;
-			Ymax = YMax;
-			Zmin = ZMin;
-			Zmax = ZMax;
-		}
-		public static void setOnOff(boolean toggle)
-		{
-			showInfo = toggle;
-			if(toggle)
-				showBlockDestroyInfo = true;
-		}
-		public static void setRayCastInfoOnOff(boolean toggle)
+
+	public static void FixRangeIssue()
 	{
-		showRayCastInfo = toggle;
+		if(VisualizerConfig.HANDLER.instance().Xmax < VisualizerConfig.HANDLER.instance().Xmin)
+		{
+			VisualizerConfig.HANDLER.instance().Xmax = VisualizerConfig.HANDLER.instance().Xmin;
+			VisualizerConfig.HANDLER.save();
+			UpadteSettings();
+		}
+		if(VisualizerConfig.HANDLER.instance().Ymax < VisualizerConfig.HANDLER.instance().Ymin)
+		{
+			VisualizerConfig.HANDLER.instance().Ymax = VisualizerConfig.HANDLER.instance().Ymin;
+			VisualizerConfig.HANDLER.save();
+			UpadteSettings();
+		}
+		if(VisualizerConfig.HANDLER.instance().Zmax < VisualizerConfig.HANDLER.instance().Zmin)
+		{
+			VisualizerConfig.HANDLER.instance().Zmax = VisualizerConfig.HANDLER.instance().Zmin;
+			VisualizerConfig.HANDLER.save();
+			UpadteSettings();
+		}
+		if(VisualizerConfig.HANDLER.instance().LayerMax < VisualizerConfig.HANDLER.instance().LayerMin)
+		{
+			VisualizerConfig.HANDLER.instance().LayerMax = VisualizerConfig.HANDLER.instance().LayerMin + 1;
+			VisualizerConfig.HANDLER.save();
+			UpadteSettings();
+		}
+
+
+	}
+	public static void SetDestructionRayRenderRange(int XMin, int XMax,int YMin, int YMax,int ZMin, int ZMax)
+	{
+		VisualizerConfig.HANDLER.instance().Xmin = XMin;
+		VisualizerConfig.HANDLER.instance().Xmax = XMax;
+		VisualizerConfig.HANDLER.instance().Ymin = YMin;
+		VisualizerConfig.HANDLER.instance().Ymax = YMax;
+		VisualizerConfig.HANDLER.instance().Zmin = ZMin;
+		VisualizerConfig.HANDLER.instance().Zmax = ZMax;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
+	}
+	public static void SetDestructionRayRenderLayer(int min, int max)
+	{
+		VisualizerConfig.HANDLER.instance().LayerMax = max;
+		VisualizerConfig.HANDLER.instance().LayerMin = min;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
+	}
+	public static void setOnOff(boolean toggle)
+	{
+		VisualizerConfig.HANDLER.instance().showInfo = toggle;
 		if(toggle)
-			showInfo = true;
+			VisualizerConfig.HANDLER.instance().showBlockDestroyInfo = true;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
+	}
+	public static void setRayCastInfoOnOff(boolean toggle)
+	{
+		VisualizerConfig.HANDLER.instance().showRayCastInfo = toggle;
+		if(toggle)
+			VisualizerConfig.HANDLER.instance().showInfo = true;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
 	}
 		public static void setBlockDestroyInfoOnOff(boolean toggle)
 	{
-		showBlockDestroyInfo = toggle;
+		VisualizerConfig.HANDLER.instance().showBlockDestroyInfo = toggle;
 		if(toggle)
-			showInfo = true;
+			VisualizerConfig.HANDLER.instance().showInfo = true;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
 	}
 		public static void setDamageOnOff(boolean toggle)
 	{
-		showDamageInfo = toggle;
+		VisualizerConfig.HANDLER.instance().showDamageInfo = toggle;
 		if(toggle)
-			showInfo = true;
+			VisualizerConfig.HANDLER.instance().showInfo = true;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
 	}
 		public static void setExplosionBlockDamageRayInfoOnOff(boolean toggle)
 	{
-		showExplosionBlockDamageRayInfo = toggle;
+		VisualizerConfig.HANDLER.instance().showExplosionBlockDamageRayInfo = toggle;
 		if(toggle)
-			showInfo = true;
+			VisualizerConfig.HANDLER.instance().showInfo = true;
+		VisualizerConfig.HANDLER.save();
+		UpadteSettings();
+	}
+	public static void UpadteSettings()
+	{
+		var instance = VisualizerConfig.HANDLER;
+		instance.load();
+
+		showInfo = instance.instance().showInfo;
+		showDamageInfo = instance.instance().showDamageInfo;
+		showBlockDestroyInfo = instance.instance().showBlockDestroyInfo;
+		showRayCastInfo = instance.instance().showRayCastInfo;
+		showExplosionBlockDamageRayInfo = instance.instance().showExplosionBlockDamageRayInfo;
+
+		Xmin = instance.instance().Xmin;
+		Xmax = instance.instance().Xmax;
+		Ymin = instance.instance().Ymin;
+		Ymax = instance.instance().Ymax;
+		Zmin = instance.instance().Zmin;
+		Zmax = instance.instance().Zmax;
+
+		LayerMin = instance.instance().LayerMin;
+		LayerMax = instance.instance().LayerMax;
+
+
 	}
 	@Override
 	public void onInitialize() {
-		WorldRenderEvents.BEFORE_DEBUG_RENDER.register((WorldRenderContext context) -> {
+		UpadteSettings();
+
+		WorldRenderEvents.AFTER_ENTITIES.register((WorldRenderContext context) -> {
+			Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+			renderSelectionBox(context.matrixStack(), camera, new BlockPos(0, 0, 0));
+
+
 			if(showInfo) {
 				RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 				RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
@@ -336,8 +480,13 @@ public class Explosive implements ModInitializer {
 					}
 				}
 			}
+
+
 		}
 		private void onClientTick(MinecraftClient client) {
+			FixRangeIssue();
+			assert MinecraftClient.getInstance() != null;
+			//createGlowingBlockDisplay(MinecraftClient.getInstance().world, new BlockPos(0, 0, 0));
 			if (showInfo) {
 				try {
 					explosionCastedLines.clear();

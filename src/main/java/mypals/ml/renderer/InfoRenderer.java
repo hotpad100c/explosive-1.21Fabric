@@ -1,7 +1,6 @@
 package mypals.ml.renderer;
 
-import mypals.ml.mathSupport.MathHelp.*;
-import mypals.ml.explotionManage.ExplosionSimulator;
+import mypals.ml.config.VisualizerConfig;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.EntityToDamage;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.RayCastPointInfo.RayCastData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
@@ -18,17 +17,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static mypals.ml.Explosive.*;
+import static mypals.ml.ExplosionVisualizer.*;
 import static mypals.ml.mathSupport.MathHelp.addAlphaWithDecay;
 import static mypals.ml.renderer.LineRenderer.renderSingleLine;
 
 
 public class InfoRenderer {
     public static final String SHOULD_BE_FINE = Formatting.GREEN + "√";
-    private static final String WILL_DESTROY = Formatting.YELLOW + "!";
+    private static final String WILL_DESTROY = VisualizerConfig.HANDLER.instance().BlockDestroyIconColor + "!";
 
     private static final InfoRenderer INSTANCE = new InfoRenderer();
 
@@ -44,24 +42,17 @@ public class InfoRenderer {
 
     public static Set<ExplosionCastLine> explosionCastedLines = new HashSet<>();
 
+
     @SuppressWarnings("ConstantConditions")
     public static void render(MatrixStack matrixStack, RenderTickCounter counter, VertexConsumer buffer) {
         BlockPos pos = new BlockPos(5, 0, 0);
-        //int goldValue = Formatting.GOLD.getColorValue();
-        // Example for drawing a string at (0, 0, 0) with some formatting
-        //drawString(matrixStack, pos, counter, SHOULD_BE_FINE, Formatting.GREEN.getColorValue(), 0.045F);
-        //drawBox(matrixStack, Vec3d.of(pos), counter, 1, Formatting.YELLOW.getColorValue());
 
         if (blocksToDamage != null) {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player != null) {
-                //client.player.sendMessage(Text.of("blocksToRender are" + blocksToRender), false);
-            }
             if( showBlockDestroyInfo) {
                 for (BlockPos p : blocksToDamage) {
                     // Render each affected block
-
-                    drawString(matrixStack, p, counter, WILL_DESTROY, Formatting.YELLOW.getColorValue(), 0.045F);
+                    drawString(matrixStack, p, counter, VisualizerConfig.HANDLER.instance().BlockDestroyIcon, VisualizerConfig.HANDLER.instance().BlockDestroyIconColor.getRGB(), VisualizerConfig.HANDLER.instance().BlockDestroyIconSize);
                 }
             }
             if(showDamageInfo) {
@@ -77,7 +68,7 @@ public class InfoRenderer {
                         float damage = e.getDamage() / 2.0f;
 
                         // 计算伤害后的剩余健康值，确保不会低于0
-                        float remainingHealth = Math.max(health - damage, 0);
+                        float remainingHealth = Math.max(health - damage, 0) > 0? Math.max(health - damage, 0) : 0;
 
                         // 准备显示的文本
                         String s = health + "♡" + " - ≈" + damage + "♡";
@@ -85,8 +76,8 @@ public class InfoRenderer {
 
                         // 根据伤害占最大生命值的比例计算颜色
                         float damageFactor = Math.max(health - damage, 0);
-                        int red = (int) (255 * damageFactor);
-                        int green = (int) (255 * (1 - damageFactor));
+                        int red = (int) (255 * (1 -damageFactor));
+                        int green = (int) (255 * damageFactor);
                         int color = (red << 16) | (green << 8);
 
                         // 绘制文本
@@ -100,14 +91,14 @@ public class InfoRenderer {
             for (ExplosionCastLine l : explosionCastedLines) {
                 int color = l.getLineColor();
                 for (CastPoint p : l.getPoints()) {
-                    int c = addAlphaWithDecay(color, p.getStrength());
+                    if(VisualizerConfig.HANDLER.instance().EnableAlpha)
+                        color = addAlphaWithDecay(color, p.getStrength());
                     if(p.getStrength() > 0)
-                        drawString(matrixStack, p.getPosition(), counter, "⧈", c, 0.005F);
+                        drawString(matrixStack, p.getPosition(), counter, VisualizerConfig.HANDLER.instance().BlockDetectionRayIcon, color, VisualizerConfig.HANDLER.instance().BlockDetectionRayIconSize);
                 }
             }
             for (Vec3d v : explotionCenters) {
-                int orangeColor = 16753920; // 橘色
-                // Render each affected block
+                int orangeColor = 16753920;
                 String s = "\uD83D\uDCA5";
                 drawString(matrixStack, v, counter, s, orangeColor, 0.045F);
             }
@@ -120,12 +111,11 @@ public class InfoRenderer {
                             Vec3d collitionPoint = r.point_hit;
                             boolean hit_target = r.hit_target;
                             if (hit_target) {
-                                drawString(matrixStack, org, counter, "X", Formatting.RED.getColorValue(), 0.01F);
+                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize);
                             }
                             else {
-                                drawString(matrixStack, org, counter, "√", Formatting.GREEN.getColorValue(), 0.01F);
-                                drawString(matrixStack, collitionPoint, counter, "⬦", Formatting.LIGHT_PURPLE.getColorValue(), 0.007F);
-                                //drawLine(matrixStack, buffer, org, collitionPoint, Formatting.BLUE.getColorValue(), 255);
+                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize);
+                                drawString(matrixStack, collitionPoint, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize - 0.005F);
                             }
                         }
                     }
@@ -178,7 +168,6 @@ public class InfoRenderer {
         Vec3d max = new Vec3d(pos.x+size, pos.y+size,pos.z+size);
         MinecraftClient client = MinecraftClient.getInstance();
         Camera camera = client.gameRenderer.getCamera();
-        StringRenderer.drawBox(countr, camera, matrixStack,pos, min, max, red, green, blue, alpha);
     }
 
 }

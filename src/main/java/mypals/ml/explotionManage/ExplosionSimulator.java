@@ -1,6 +1,6 @@
 package mypals.ml.explotionManage;
 
-import mypals.ml.Explosive;
+import mypals.ml.config.VisualizerConfig;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.EntityToDamage;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.RayCastPointInfo.RayCastData;
 import mypals.ml.explotionManage.ExplotionAffectdDataManage.DamagedEntityData.SamplePointsData.SamplePointData;
@@ -18,11 +18,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 
 import java.util.*;
 
-import static mypals.ml.Explosive.*;
+import static mypals.ml.ExplosionVisualizer.*;
 
 public class ExplosionSimulator {
 
@@ -116,15 +115,14 @@ public class ExplosionSimulator {
         double currentX = this.x;
         double currentY = this.y;
         double currentZ = this.z;
-
+        int layer = 0;
         for (float blastStrength = initialBlastStrength; blastStrength > 0.0F; blastStrength -= 0.22500001F) {
-
             BlockPos currentPos = BlockPos.ofFloored(currentX, currentY, currentZ);
 
             BlockState blockState = this.world.getBlockState(currentPos);
             FluidState fluidState = this.world.getFluidState(currentPos);
 
-            if(inRange(x,y,z) && showExplosionBlockDamageRayInfo)
+            if((inRange(x,y,z) && inLayer(layer)) && showExplosionBlockDamageRayInfo )
                 castedPoints.add(new CastPoint(new Vec3d(currentX,currentY,currentZ), blastStrength));
 
             if (!this.world.isInBuildLimit(currentPos)) {
@@ -151,6 +149,7 @@ public class ExplosionSimulator {
             currentX += dx * 0.30000001192092896;
             currentY += dy * 0.30000001192092896;
             currentZ += dz * 0.30000001192092896;
+            layer++;
 
         }
         affected.blockDestructionRays.add(new ExplosionCastLine(rgb,castedPoints));
@@ -229,7 +228,14 @@ public class ExplosionSimulator {
     }
     public boolean inRange(int x, int y, int z)
     {
+        if(VisualizerConfig.HANDLER.instance().Invert)
+            return !((Xmin <= x && Xmax >= x) && (Ymin <= y && Ymax >= y) && (Zmin <= z && Zmax >= z));
+        else
+            return (Xmin <= x && Xmax >= x) && (Ymin <= y && Ymax >= y) && (Zmin <= z && Zmax >= z);
+    }
+    public boolean inLayer(int layer)
+    {
 
-        return (Xmin <= x && Xmax >= x) && (Ymin <= y && Ymax >= y) && (Zmin <= z && Zmax >= z);
+        return (LayerMin<= layer && LayerMax >= layer);
     }
 }
