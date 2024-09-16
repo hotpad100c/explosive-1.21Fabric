@@ -102,5 +102,8 @@
   "config.option.entity_sample_point_blocked_icon": "エンティティサンプルポイント(ブロック位置)レンダリングアイコン",
 
   "config.option.entity_sample_point_icon_size": "エンティティサンプルポイント(安全)アイコンサイズ",
-  "config.option.description.entity_sample_point_icon_size": "爆発で破壊されるブロックのアイコンサイズ"
+  "config.option.description.entity_sample_point_icon_size": "爆発で破壊されるブロックのアイコンサイズ",
+
+  "config.option.see_Throw": "シースルー",
+  "config.option.description.see_Throw": "すべてのものの上にレンダリング、壁の後ろでも見える"
 }

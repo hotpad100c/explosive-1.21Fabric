@@ -42,6 +42,8 @@ public class VisualizerConfig {
     @SerialEntry
     public static float BlockDetectionRayIconSize = 0.005F;
     @SerialEntry
+    public static boolean BlockDetectionRaySeeThrow = false;
+    @SerialEntry
     public static boolean EnableAlpha = true;
     @SerialEntry
     public static int Xmin = 0, Ymin = 0, Zmin = 0;
@@ -59,6 +61,9 @@ public class VisualizerConfig {
     public static String BlockDestroyIcon = "!";
     @SerialEntry
     public static float BlockDestroyIconSize = 0.045F;
+    @SerialEntry
+    public static boolean BlockDestroyIconSeeThrow = true;
+
 
     @SerialEntry
     public static Color EntitySamplePoion_Safe_IconColor = Color.green;
@@ -68,6 +73,8 @@ public class VisualizerConfig {
 
     @SerialEntry
     public static Color EntitySamplePoion_Blocked_IconColor = Color.MAGENTA;
+    @SerialEntry
+    public static boolean EntitySamplePointSeeThrow = true;
 
     @SerialEntry
     public static String EntitySamplePoion_Safe_Icon = "√";

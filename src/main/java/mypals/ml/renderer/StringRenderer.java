@@ -28,23 +28,22 @@ public class StringRenderer {
     public static double lastTickPosX = 0;
     public static double lastTickPosY = 0;
     public static double lastTickPosZ = 0;
-    public static void renderText(MatrixStack matrixStack,RenderTickCounter counter,BlockPos pos, String text, int color, float SIZE)
+    public static void renderText(MatrixStack matrixStack,RenderTickCounter counter,BlockPos pos, String text, int color, float SIZE, boolean seeThrow)
     {
         MinecraftClient client = MinecraftClient.getInstance();
         Camera camera = client.gameRenderer.getCamera();
         //Vec3d textPos = new Vec3d(0, 0, 0);
         Vec3d textPos = new Vec3d(pos.toCenterPos().toVector3f());
-        drawString(counter, camera, textPos, text, color, SIZE);
+        drawString(counter, camera, textPos, text, color, SIZE, seeThrow);
     }
-    public static void renderText(MatrixStack matrixStack,RenderTickCounter counter,Vec3d pos, String text, int color, float SIZE)
+    public static void renderText(MatrixStack matrixStack,RenderTickCounter counter,Vec3d pos, String text, int color, float SIZE, boolean seeThrow)
     {
         MinecraftClient client = MinecraftClient.getInstance();
         Camera camera = client.gameRenderer.getCamera();
-        //Vec3d textPos = new Vec3d(0, 0, 0);
         Vec3d textPos = pos;
-        drawString(counter, camera, textPos, text, color, SIZE);
+        drawString(counter, camera, textPos, text, color, SIZE, seeThrow);
     }
-    public static void drawString(RenderTickCounter tickCounter, Camera camera, Vec3d textPos, String text, int color, float SIZE) {
+    public static void drawString(RenderTickCounter tickCounter, Camera camera, Vec3d textPos, String text, int color, float SIZE, boolean seeThrow) {
 
         Matrix4fStack modelViewMatrix = new Matrix4fStack(1);
         modelViewMatrix.identity();
@@ -64,8 +63,19 @@ public class StringRenderer {
         float totalWidth = textRenderer.getWidth(text);
         float writtenWidth = 1;
         float renderX = -totalWidth * 0.5F + writtenWidth;
-        textRenderer.draw(text, renderX, 0, color, false, modelViewMatrix
-                , MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers(), TextRenderer.TextLayerType.SEE_THROUGH, 0, 50);
+
+        VertexConsumerProvider.Immediate immediate = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        RenderSystem.disableDepthTest();
+
+        if(seeThrow)
+            textRenderer.draw(text, renderX, 0, color, false, modelViewMatrix
+                , immediate, TextRenderer.TextLayerType.SEE_THROUGH, 0, 0xF000F0);
+        else
+            textRenderer.draw(text, renderX, 0, color, false, modelViewMatrix
+                , immediate, TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
+
+        RenderSystem.enableDepthTest();
+
     }
 
 }

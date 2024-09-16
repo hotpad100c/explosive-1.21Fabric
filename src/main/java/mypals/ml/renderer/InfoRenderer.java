@@ -52,7 +52,7 @@ public class InfoRenderer {
             if( showBlockDestroyInfo) {
                 for (BlockPos p : blocksToDamage) {
                     // Render each affected block
-                    drawString(matrixStack, p, counter, VisualizerConfig.HANDLER.instance().BlockDestroyIcon, VisualizerConfig.HANDLER.instance().BlockDestroyIconColor.getRGB(), VisualizerConfig.HANDLER.instance().BlockDestroyIconSize);
+                    drawString(matrixStack, p, counter, VisualizerConfig.HANDLER.instance().BlockDestroyIcon, VisualizerConfig.HANDLER.instance().BlockDestroyIconColor.getRGB(), VisualizerConfig.HANDLER.instance().BlockDestroyIconSize, VisualizerConfig.HANDLER.instance().BlockDestroyIconSeeThrow);
                 }
             }
             if(showDamageInfo) {
@@ -81,8 +81,8 @@ public class InfoRenderer {
                         int color = (red << 16) | (green << 8);
 
                         // 绘制文本
-                        drawString(matrixStack, e.getEntity().getPos().add(0, height + 0.5, 0), counter, s, color, 0.025F);
-                        drawString(matrixStack, e.getEntity().getPos().add(0, height, 0), counter, s2, color, 0.025F);
+                        drawString(matrixStack, e.getEntity().getPos().add(0, height + 0.5, 0), counter, s, color, 0.025F, false);
+                        drawString(matrixStack, e.getEntity().getPos().add(0, height, 0), counter, s2, color, 0.025F, false);
                     }
 
 
@@ -94,13 +94,13 @@ public class InfoRenderer {
                     if(VisualizerConfig.HANDLER.instance().EnableAlpha)
                         color = addAlphaWithDecay(color, p.getStrength());
                     if(p.getStrength() > 0)
-                        drawString(matrixStack, p.getPosition(), counter, VisualizerConfig.HANDLER.instance().BlockDetectionRayIcon, color, VisualizerConfig.HANDLER.instance().BlockDetectionRayIconSize);
+                        drawString(matrixStack, p.getPosition(), counter, VisualizerConfig.HANDLER.instance().BlockDetectionRayIcon, color, VisualizerConfig.HANDLER.instance().BlockDetectionRayIconSize,  VisualizerConfig.HANDLER.instance().BlockDetectionRaySeeThrow);
                 }
             }
             for (Vec3d v : explotionCenters) {
                 int orangeColor = 16753920;
                 String s = "\uD83D\uDCA5";
-                drawString(matrixStack, v, counter, s, orangeColor, 0.045F);
+                drawString(matrixStack, v, counter, s, orangeColor, 0.045F, true);
             }
             if(samplePointData != null && showRayCastInfo)
             {
@@ -111,11 +111,11 @@ public class InfoRenderer {
                             Vec3d collitionPoint = r.point_hit;
                             boolean hit_target = r.hit_target;
                             if (hit_target) {
-                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize);
+                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Danger_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize,  VisualizerConfig.HANDLER.instance().EntitySamplePointSeeThrow);
                             }
                             else {
-                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize);
-                                drawString(matrixStack, collitionPoint, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize - 0.005F);
+                                drawString(matrixStack, org, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Safe_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize,  VisualizerConfig.HANDLER.instance().EntitySamplePointSeeThrow);
+                                drawString(matrixStack, collitionPoint, counter, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_Icon, VisualizerConfig.HANDLER.instance().EntitySamplePoion_Blocked_IconColor.getRGB(), VisualizerConfig.HANDLER.instance().EntitySamplePoionIconSize - 0.005F,  VisualizerConfig.HANDLER.instance().EntitySamplePointSeeThrow);
                             }
                         }
                     }
@@ -148,15 +148,15 @@ public class InfoRenderer {
         explosionCastedLines = l;
     }
 
-    public static void drawString(MatrixStack matrixStack, BlockPos pos, RenderTickCounter countr, String text, int color, float size) {
+    public static void drawString(MatrixStack matrixStack, BlockPos pos, RenderTickCounter countr, String text, int color, float size, boolean seeThrow) {
         // Assuming StringDrawer.drawString is a method to draw text on the screen
         MinecraftClient client = MinecraftClient.getInstance();
-        StringRenderer.renderText(matrixStack, countr, pos, text, color, size);
+        StringRenderer.renderText(matrixStack, countr, pos, text, color, size, seeThrow);
     }
-    public static void drawString(MatrixStack matrixStack, Vec3d pos, RenderTickCounter countr, String text, int color, float size) {
+    public static void drawString(MatrixStack matrixStack, Vec3d pos, RenderTickCounter countr, String text, int color, float size, boolean seeThrow) {
         // Assuming StringDrawer.drawString is a method to draw text on the screen
         MinecraftClient client = MinecraftClient.getInstance();
-        StringRenderer.renderText(matrixStack, countr, pos, text, color, size);
+        StringRenderer.renderText(matrixStack, countr, pos, text, color, size, seeThrow);
     }
     public static void drawBox(MatrixStack matrixStack, Vec3d pos,RenderTickCounter countr, float size, int color)
     {

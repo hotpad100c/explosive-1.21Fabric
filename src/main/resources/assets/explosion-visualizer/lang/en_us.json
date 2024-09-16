@@ -102,6 +102,8 @@
   "config.option.entity_sample_point_blocked_icon": "Entity sample-point (blocked position) render icon",
 
   "config.option.entity_sample_point_icon_size": "Entity sample-point (safe) icon size",
-  "config.option.description.entity_sample_point_icon_size": "Size of the icon for the blocks that will be destroyed by the explosion"
+  "config.option.description.entity_sample_point_icon_size": "Size of the icon for the blocks that will be destroyed by the explosion",
 
+  "config.option.see_Throw": "Visible throw walls",
+  "config.option.description.see_Throw": "Icon visible throw walls"
 }

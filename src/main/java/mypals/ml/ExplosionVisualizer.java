@@ -98,7 +98,7 @@ public class ExplosionVisualizer implements ModInitializer {
 										.executes(context -> {
 											boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-											Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.main_render", toggle).formatted(Formatting.GOLD).getString());
+											Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.main_render", toggle).getString()).formatted(Formatting.GOLD);
 
                                             assert player != null;
                                             player.sendMessage(coloredMessage, false);
@@ -113,7 +113,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.entity_damage_render", toggle).formatted(Formatting.GREEN).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.entity_damage_render", toggle).getString()).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -127,7 +127,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.entity_ray_cast", toggle).formatted(Formatting.GREEN).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.entity_ray_cast", toggle).getString()).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -142,7 +142,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_destruction_render", toggle).formatted(Formatting.GREEN).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_destruction_render", toggle).getString()).formatted(Formatting.GREEN);
 
                                                 assert player != null;
                                                 player.sendMessage(coloredMessage, false);
@@ -156,7 +156,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												boolean toggle = BoolArgumentType.getBool(context, "toggle");
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_render", toggle).formatted(Formatting.GREEN).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_render", toggle).getString()).formatted(Formatting.GREEN);
 
 												assert player != null;
 												player.sendMessage(coloredMessage, false);
@@ -182,7 +182,7 @@ public class ExplosionVisualizer implements ModInitializer {
 																							int Zmax = IntegerArgumentType.getInteger(context, "Zmax");
 																							SetDestructionRayRenderRange(Xmin, Xmax, Ymin,Ymax,Zmin,Zmax);
 
-																							Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_damage_ray_range_updated").formatted(Formatting.GREEN).getString());
+																							Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_damage_ray_range_updated").getString()).formatted(Formatting.GREEN);
 
 																							assert player != null;
 																							player.sendMessage(coloredMessage, false);
@@ -204,7 +204,7 @@ public class ExplosionVisualizer implements ModInitializer {
 																int LayerMax = IntegerArgumentType.getInteger(context, "LayerMax");
 																SetDestructionRayRenderLayer(LayerMin,LayerMax);
 
-																Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_damage_ray_layer_updated").formatted(Formatting.GREEN).getString());
+																Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_damage_ray_layer_updated").getString()).formatted(Formatting.GREEN);
 
 																assert player != null;
 																player.sendMessage(coloredMessage, false);
@@ -219,7 +219,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											SetDestructionRayRenderLayer(0,100);
 											SetDestructionRayRenderRange(0,16,0,16,0,16);
 
-											Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_settings_reset").formatted(Formatting.RED).getString());
+											Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_settings_reset").getString()).formatted(Formatting.RED);
 
 											assert player != null;
 											player.sendMessage(coloredMessage, false);
@@ -231,7 +231,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												SetDestructionRayRenderLayer(0,100);
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_layer_reset").formatted(Formatting.YELLOW).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_layer_reset").getString()).formatted(Formatting.YELLOW);
 
 												assert player != null;
 												player.sendMessage(coloredMessage, false);
@@ -243,7 +243,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.executes(context -> {
 												SetDestructionRayRenderRange(0,16,0,16,0,16);
 
-												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_range_reset").formatted(Formatting.YELLOW).getString());
+												Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.block_detection_ray_range_reset").getString()).formatted(Formatting.YELLOW);
 
 												assert player != null;
 												player.sendMessage(coloredMessage, false);
@@ -274,7 +274,7 @@ public class ExplosionVisualizer implements ModInitializer {
 																						{
 																							if(Objects.equals(FE.name, name)) {
 
-																								Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_duplicate",name, new Vec3d(x, y, z).toString()).formatted(Formatting.RED).getString());
+																								Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_duplicate",name, new Vec3d(x, y, z).toString()).getString()).formatted(Formatting.RED);
 
 																								assert player != null;
 																								player.sendMessage(coloredMessage, false);
@@ -282,7 +282,7 @@ public class ExplosionVisualizer implements ModInitializer {
 																							}
 																						}
 																						fakeExplosions.add(new FakeExplosion(x, y, z, p, ignoreBlockInside, name));
-																						Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_add", name, new Vec3d(x, y, z), p).formatted(Formatting.GREEN).getString());
+																						Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_add", name, new Vec3d(x, y, z), p).getString()).formatted(Formatting.GREEN);
 																						assert player != null;
 																						player.sendMessage(coloredMessage, false);
 																						return 1;
@@ -300,7 +300,7 @@ public class ExplosionVisualizer implements ModInitializer {
 													.executes(context -> {
 														String n = StringArgumentType.getString(context, "name");
                                                         fakeExplosions.removeIf(fe -> Objects.equals(fe.name, n));
-														Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_remove" + n).formatted(Formatting.YELLOW).getString());
+														Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_remove" + n).getString()).formatted(Formatting.YELLOW);
 
 														assert player != null;
 														player.sendMessage(coloredMessage, false);
@@ -310,7 +310,7 @@ public class ExplosionVisualizer implements ModInitializer {
 											.then(ClientCommandManager.literal("all")
 													.executes(context -> {
 														fakeExplosions.clear();
-														Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_clear").formatted(Formatting.RED).getString());
+														Text coloredMessage = Text.literal(Text.translatable("command.explosion-visualizer.fake_explosion_clear").getString()).formatted(Formatting.RED);
 
 														assert player != null;
 														player.sendMessage(coloredMessage, false);
@@ -445,9 +445,8 @@ public class ExplosionVisualizer implements ModInitializer {
 	public void onInitialize() {
 		UpadteSettings();
 
-		WorldRenderEvents.AFTER_ENTITIES.register((WorldRenderContext context) -> {
-			//Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
-			//renderSelectionBox(context.matrixStack(), camera, new BlockPos(0, 0, 0));
+		WorldRenderEvents.START.register((WorldRenderContext context) -> {
+
 			if(showInfo) {
 				RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 				RenderSystem.setShaderColor(1f, 1f, 1f, 1f);

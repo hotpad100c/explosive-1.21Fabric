@@ -102,5 +102,8 @@
   "config.option.entity_sample_point_blocked_icon": "实体采样点(被阻挡位置)渲染图标",
 
   "config.option.entity_sample_point_icon_size": "实体采样点(安全)图标大小",
-  "config.option.description.entity_sample_point_icon_size": "爆炸将破坏的方块的图标大小"
+  "config.option.description.entity_sample_point_icon_size": "爆炸将破坏的方块的图标大小",
+
+  "config.option.see_Throw": "透視",
+  "config.option.description.see_Throw": "渲染於一切之上，在牆後仍然可見"
 }
